@@ -57,39 +57,39 @@ bool isSafe() {
     return true;
 }
 
-bool requestResources(int processId, int request[]) {
-    for (int i = 0; i < m; i++) {
-        if (request[i] > need[processId][i]) {
-            printf("Request cannot be granted. Exceeds maximum claim.\n");
-            return false;
-        }
-        if (request[i] > available[i]) {
-            printf("Request cannot be granted. Not enough available resources.\n");
-            return false;
-        }
-    }
+// bool requestResources(int processId, int request[]) {
+//     for (int i = 0; i < m; i++) {
+//         if (request[i] > need[processId][i]) {
+//             printf("Request cannot be granted. Exceeds maximum claim.\n");
+//             return false;
+//         }
+//         if (request[i] > available[i]) {
+//             printf("Request cannot be granted. Not enough available resources.\n");
+//             return false;
+//         }
+//     }
 
-    // Tentatively allocate resources
-    for (int i = 0; i < m; i++) {
-        available[i] -= request[i];
-        allocation[processId][i] += request[i];
-        need[processId][i] -= request[i];
-    }
+//     // Tentatively allocate resources
+//     for (int i = 0; i < m; i++) {
+//         available[i] -= request[i];
+//         allocation[processId][i] += request[i];
+//         need[processId][i] -= request[i];
+//     }
 
-    if (isSafe()) {
-        printf("Request can be granted. The system is in a safe state.\n");
-        return true;
-    } else {
-        // Rollback allocation
-        for (int i = 0; i < m; i++) {
-            available[i] += request[i];
-            allocation[processId][i] -= request[i];
-            need[processId][i] += request[i];
-        }
-        printf("Request cannot be granted. The system would be in an unsafe state.\n");
-        return false;
-    }
-}
+//     if (isSafe()) {
+//         printf("Request can be granted. The system is in a safe state.\n");
+//         return true;
+//     } else {
+//         // Rollback allocation
+//         for (int i = 0; i < m; i++) {
+//             available[i] += request[i];
+//             allocation[processId][i] -= request[i];
+//             need[processId][i] += request[i];
+//         }
+//         printf("Request cannot be granted. The system would be in an unsafe state.\n");
+//         return false;
+//     }
+// }
 
 int main() {
     printf("Number of processes: ");
@@ -118,16 +118,17 @@ int main() {
         }
     }
 
-    int processId;
-    int request[MAX_RESOURCES];
-    printf("Request for process: ");
-    scanf("%d", &processId);
-    printf("Enter request vector: ");
-    for (int i = 0; i < m; i++) {
-        scanf("%d", &request[i]);
-    }
+    isSafe();
+    // int processId;
+    // int request[MAX_RESOURCES];
+    // printf("Request for process: ");
+    // scanf("%d", &processId);
+    // printf("Enter request vector: ");
+    // for (int i = 0; i < m; i++) {
+    //     scanf("%d", &request[i]);
+    // }
 
-    requestResources(processId, request);
+    // requestResources(processId, request);
 
     return 0;
 }

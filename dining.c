@@ -4,20 +4,7 @@
 
 #define N 5 // Number of philosophers and forks
 
-// Semaphore (representing forks)
-int chopstick[N] = {1, 1, 1, 1, 1}; // Each chopstick is initially available
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER; // Mutex to avoid race conditions when updating chopstick values
-
-// Wait function to acquire a semaphore
-void wait(int *sem) {
-    while (*sem <= 0); // Busy wait
-    (*sem)--;
-}
-
-// Signal function to release a semaphore
-void signal(int *sem) {
-    (*sem)++;
-}
+pthread_mutex_t chopstick[N]; // Mutex for each chopstick
 
 // Simulate philosopher thinking
 void think(int id) {
@@ -34,29 +21,37 @@ void eat(int id) {
 // Philosopher function
 void* philosopher(void* num) {
     int id = *(int*)num;
+
     while (1) {
         think(id); // Philosopher is thinking
 
-        // Try to acquire both chopsticks
-        pthread_mutex_lock(&mutex); // Lock to avoid race conditions when updating chopsticks
-        wait(&chopstick[id]); // Pick up the left chopstick
-        wait(&chopstick[(id + 1) % N]); // Pick up the right chopstick
-        pthread_mutex_unlock(&mutex);
+        // Pick up chopsticks
+        if (id % 2 == 0) { // Even philosophers pick up left then right
+            pthread_mutex_lock(&chopstick[id]);
+            pthread_mutex_lock(&chopstick[(id + 1) % N]);
+        } else { // Odd philosophers pick up right then left
+            pthread_mutex_lock(&chopstick[(id + 1) % N]);
+            pthread_mutex_lock(&chopstick[id]);
+        }
 
         eat(id); // Philosopher is eating
 
-        // Release both chopsticks
-        pthread_mutex_lock(&mutex);
-        signal(&chopstick[id]); // Put down the left chopstick
-        signal(&chopstick[(id + 1) % N]); // Put down the right chopstick
-        pthread_mutex_unlock(&mutex);
+        // Put down chopsticks
+        pthread_mutex_unlock(&chopstick[id]);
+        pthread_mutex_unlock(&chopstick[(id + 1) % N]);
     }
+
     return NULL;
 }
 
 int main() {
     pthread_t philosophers[N];
     int ids[N];
+
+    // Initialize mutexes for chopsticks
+    for (int i = 0; i < N; i++) {
+        pthread_mutex_init(&chopstick[i], NULL);
+    }
 
     // Create threads for each philosopher
     for (int i = 0; i < N; i++) {
@@ -67,6 +62,11 @@ int main() {
     // Wait for all philosopher threads to finish (optional in this infinite loop case)
     for (int i = 0; i < N; i++) {
         pthread_join(philosophers[i], NULL);
+    }
+
+    // Destroy mutexes
+    for (int i = 0; i < N; i++) {
+        pthread_mutex_destroy(&chopstick[i]);
     }
 
     return 0;
